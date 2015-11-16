@@ -1,229 +1,131 @@
 <script>
-function Var(){}
-Var.create=function(min,max,d){
-  var v=new Var;
-  v.min=min;v.max=max;v.d=d;
-  return v;
-}
-Var.range=function(a,b){
-  return Var.create((a+b)/2,(a+b)/2,(b-a)/2);
-}
-Var.const=function(c){
-  var v=new Var;
-  v.min=v.max=c;v.d=0;
-  return v;
-}
-Var.prototype={
-  addC:function(c){
-    return Var.create(this.min+c,this.max+c,this.d);
-  },
-  addV:function(v){
-    return Var.create(this.min+v.min,this.max+v.max,this.d+v.d);
-  },
-  multC:function(c){
-    var min,max
-    if(c>0){
-      min=this.min*c;
-      max=this.max*c;
-    }else{
-      min=this.max*c;
-      max=this.min*c;
-    }
-    return Var.create(min,max,this.d*c);
-  },
-  multV:function(v){
-    var ava=(this.max+this.min)/2;
-    var avb=(v.max+v.min)/2;
-    var difa=(this.max-this.min)/2;
-    var difb=(v.max-v.min)/2;
-    var dif=Math.abs(difa)*Math.abs(v.d)+Math.abs(difb)*Math.abs(this.d);
-    var cs=[this.min*v.min,this.max*v.max,this.min*v.max,this.max*v.min].sort(function(a,b){return a>b?1:-1});
-    return Var.create(cs[0]-dif,cs[3]+this.d*v.d+dif,ava*v.d+avb*this.d)
-  },
-  cos:function(){
-    return this.add(Math.PI/2).sin();
-  },
-  sin:function(){
-    var range=this.minmax();
-    var l=range.max-range.min;
-    if(l>=Math.PI)return Var.create(-1,1,0);
-    var av=(this.min+this.max)/2;
-    var cosav=Math.cos(av);
-    var sinav=Math.sin(av);
-    //x=this-av
-    //sin(this)
-    //=sin(x+av)
-    //=Math.sin(x)*cosav+Math.cos(x)*sinav
-    var cminmax=[Math.cos(l/2)*sinav,sinav];
-    if(cminmax[1]<cminmax[0])cminmax=[cminmax[1],cminmax[0]];
-    //=Var.create(cminmax[0],cminmax[1],0)+Math.sin(x)*cosav
-    var d=Math.sin(l/2)/(l/2);
-    var t=Math.acos(d);
-    var y=Math.sin(t)-d*t
-    // (-y~y)+d*t
-    return this.addC(-av).multC(d).addV(Var.create(cminmax[0]-y,cminmax[1]+y,0));
-  },
-  sqrt: function(){
-    var range=this.minmax();
-    if(range.max<=0)return Var.const(0);
-    var min=Math.max(range.min,0);
-    var max=range.max;
-    var d=(Math.sqrt(max)-Math.sqrt(min))/(max-min);
-    // √x =~ √min+d*(x-min)
-    var t=1/4/d/d;
-    var k=Math.sqrt(t)-Math.sqrt(min)+d*(t-min);
-    return this.addC(-min).multC(d).addC(Math.sqrt(min)).addV(Var.create(0,k,0));
-  },
-  inv: function(){
-    var range=this.minmax();
-    if(range.min<=0&&range.max>=0)return Var.create(-1e+10,1e+10,0);
-    var d=(1/range.max-1/range.min)/(range.max-range.min);
-    var r0=range.min;
-    var t=Math.sqrt(-1/d)
-    var k=1/r0+d*(t-r0)-1/t;
-    return this.addC(-r0).multC(d).addC(1/r0).addV(Var.create(-k,0,0));
-  },
-  minmax:function(){
-    return {min: this.min-this.d, max: this.max+this.d}
-  }
-}
-
-Solver={};
-Solver.minanswer=function(range,func,D){
-  if(D===undefined)D=1e-3;
-  var arr=[range];
-  for(var i=0;i<100;i++){
-    var range=arr.shift();
-    if(!range)return null;
-    var av=(range[0]+range[1])/2;
-    var dif=(range[1]-range[0])/2
-    var val=Var.create(av,av,dif);
-    var y=func(val);
-    var min=y.min-Math.abs(y.d);
-    var max=y.max+Math.abs(y.d);
-    var t=(y.min+y.max)/y.d/2;
-    var x=(range[0]*(1+t)+(1-t)*range[1])/2;
-    var cx=x-(range[0]+range[1])/2
-    if(range[1]-range[0]<=D&&Math.abs(cx)<D){
-      return x;
-    }
-    if(min>0||max<0){
-      continue;
-    }
-    var t0=-1,t1=1;
-    if(y.d!=0){
-      var tab = [-y.min/y.d, -y.max/y.d];
-      if(tab[1]<tab[0])tab=[tab[1],tab[0]];
-      if(t0<tab[0]&&tab[0]<t1)t0=tab[0];
-      if(t0<tab[1]&&tab[1]<t1)t1=tab[1];
-    }
-    var ra=(range[0]*(1-t0)+range[1]*(1+t0))/2;
-    var rb=(range[0]*(1-t1)+range[1]*(1+t1))/2;
-    if(t1-t0>1){
-      var tc=(t0+t1)/2;
-      var rc=(range[0]*(1-tc)+range[1]*(1+tc))/2;
-      arr.unshift([rc,rb]);
-      arr.unshift([ra,rc]);
-    }else{
-      arr.unshift([ra,rb]);
-    }
-  }
-  return arr[0]&&(arr[0][0]+arr[0][1])/2;
-}
-
 onload=function(){
   canvas=document.createElement('canvas');
   document.body.appendChild(canvas);
   g=canvas.getContext('2d');
-  canvas.width=512;canvas.height=512;
-  var i=0;var k=3331;
-  function routine(){
-    for(var j=0;j<canvas.width;j++){
-      var index=i*k%(canvas.width*canvas.height);
-      var x=index%canvas.width;
-      var y=(index-x)/canvas.width;
-      render(x,y);
-      i++;
+  canvas.width=canvas.height=1024;
+  var r=new Renderer();
+  r.render(function(x,y,z){
+    var l=Math.sqrt(x*x+y*y);
+    var donut=(l-2)*(l-2)+z*z-1;
+    var twist=0.3*Math.sin(5*Math.atan2(z,l-2)+8*Math.atan2(y,x));
+    var boko=0.5/(1+100*z*z);
+    return donut+twist+boko;
+  },[255,240,220]);
+
+  r.render(function(x,y,z){
+    var l=Math.sqrt(x*x+y*y);
+    var donut=(l-2)*(l-2)+z*z-1;
+    var deko=-0.2/(1+100*z*z);
+    var twist=0.3*Math.sin(5*Math.atan2(z,l-2)+8*Math.atan2(y,x));
+    return (donut+twist+deko)*(donut+twist+deko)+Math.pow((x-z)/4-1,12)-0.2;
+  },[128,64,16]);
+  r.render(function(x,y,z){
+    var l=Math.sqrt(x*x+y*y);
+    return (l-2)*(l-2)+10*z*z-1+(Math.sin(7*x-8*y+9*z)+Math.sin(8*x+9*y-7*z)+Math.sin(-9*x+7*y+8*z))/16;
+  },[255,255,255]);
+}
+function Renderer(){
+  this.depthbuf={};
+}
+Renderer.prototype.render=function(func,color){
+  var values={};
+  var SIZE=256;
+  var cubes=[];
+  var IN=2;
+  var R=3.2;
+  var size=SIZE/IN;
+  for(var i=0;i<IN;i++)for(var j=0;j<IN;j++)for(var k=0;k<IN;k++){
+    cubes.push({x:i*size,y:j*size,z:k*size})
+  }
+  while(size>1){
+    function calc(x,y,z){
+      var key=(x*SIZE+y)*SIZE+z;
+      var val=values[key];
+      if(val!==undefined)return val;
+      val=func(R*(2*x/SIZE-1),R*(2*y/SIZE-1),R*(2*z/SIZE-1));
+      return values[key]=val;
     }
-    if(i<canvas.width*canvas.height)setTimeout(routine,0);
+    var subcubes=[];
+    cubes.forEach(function(c){
+      var neg=false;
+      var pos=false;
+      for(var i=0;i<=size;i++)for(var j=0;j<=size;j++){
+        var val=calc(c.x+i,c.y+j,c.z);
+        neg=neg||val<0;pos=pos||val>0;
+        var val=calc(c.x+i,c.y+j,c.z+size);
+        neg=neg||val<0;pos=pos||val>0;
+        var val=calc(c.x,c.y+i,c.z+j);
+        neg=neg||val<0;pos=pos||val>0;
+        var val=calc(c.x+size,c.y+i,c.z+j);
+        neg=neg||val<0;pos=pos||val>0;
+        var val=calc(c.x+j,c.y,c.z+i);
+        neg=neg||val<0;pos=pos||val>0;
+        var val=calc(c.x+j,c.y+size,c.z+i);
+        neg=neg||val<0;pos=pos||val>0;
+      }
+      if(!neg||!pos)return;
+      for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
+        subcubes.push({x:c.x+i*size/2,y:c.y+j*size/2,z:c.z+k*size/2});  
+      }
+    })
+    cubes=subcubes;
+    size/=2;
+    console.log(size,cubes.length)
   }
-  routine();
-  function func(x,y,z){
-    var r2=x.multV(x).addV(y.multV(y)).addC(0.01);
-    var l=r2.addC(-2).multC(1/Math.sqrt(8)).addC(Math.sqrt(2)).addC(-2);
-    var donut=l.multV(l).addV(z.multV(z)).addC(-1)
-    var boko=z.multV(z).multC(100).addC(1).inv().multC(0.5);
-    var r=l.multV(l).addV(z.multV(z)).sqrt();
-    var sin=z.multV(r.inv())
-    var cos=l.multV(r.inv())
-    var sin2=sin.multV(cos).multC(2);
-    var cos2=cos.multV(cos).addV(sin.multV(sin).multC(-1));
-    var sin4=sin2.multV(cos2).multC(2);
-    var cos4=cos2.multV(cos2).addV(sin2.multV(sin2).multC(-1));
-    var sin5=sin4.multV(cos).addV(sin.multV(cos4));
-    var cos5=cos4.multV(cos).addV(sin4.multV(sin2).multC(-1));
-
-    var xysin=y.multV(r2.sqrt().inv());
-    var xycos=x.multV(r2.sqrt().inv());
-    var xysin2=xysin.multV(xycos).multC(2);
-    var xycos2=xycos.multV(xycos).addV(xysin.multV(xysin).multC(-1));
-    var xysin4=xysin2.multV(xycos2).multC(2);
-    var xycos4=xycos2.multV(xycos2).addV(xysin2.multV(xysin2).multC(-1));
-    var xysin8=xysin4.multV(xycos4).multC(2);
-    var xycos8=xycos4.multV(xycos4).addV(xysin4.multV(xysin4).multC(-1));
-    var twist=sin5.multV(xycos8).addV(cos5.multV(xysin8)).multC(0.2);
-    // twist=sin5.multC(0.2);
-
-
-    return donut.addV(boko).addV(twist)
-    // sin(5*atan2(z,l-2))
+  var t=Math.PI/3;
+  var cos=Math.cos(t),sin=Math.sin(t);
+  var depthbuf=this.depthbuf;
+  function depthplot(x,y,depth,color,light){
+    if(x<0||x>=canvas.width||y<0||y>=canvas.height)return;
+    var key=y*canvas.width+x;
+    var currentDepth=depthbuf[key];
+    if(currentDepth&&depth>currentDepth)return;
+    depthbuf[key]=depth;
+    g.fillStyle='rgb('+color.map(function(c){return Math.round(c*light)})+')'
+    g.fillRect(x,canvas.height-y,1,1);
   }
-  function render(x,y){
-    var pos={x:0,y:0,z:4};
-    var d={
-      x:(2*x-canvas.width-1)/canvas.width,
-      y:(2*y-canvas.height-1)/canvas.width,
-      z:-1
+  function plot(x,y,z){
+    x=2*x/SIZE-1;
+    y=2*y/SIZE-1;
+    z=2*z/SIZE-1;
+    var delta=R/SIZE/256;
+    var f=func(R*x,R*y,R*z);
+    fdx=func(R*x+delta,R*y,R*z)-f;
+    fdy=func(R*x,R*y+delta,R*z)-f;
+    fdz=func(R*x,R*y,R*z+delta)-f;
+    var dr=Math.sqrt(fdx*fdx+fdy*fdy+fdz*fdz);
+    var d={x:fdx/dr,y:fdy/dr,z:fdz/dr};
+    var light=(2-(d.x+d.y+d.z)/Math.sqrt(3))/3;
+    var p={
+      x:x,
+      y:(y*cos-sin*z),
+      z:(z*cos+sin*y)
     };
-    var rot=Math.PI/4;
-    pos={
-      x:pos.x,
-      y:Math.cos(rot)*pos.y+Math.sin(rot)*pos.z,
-      z:Math.cos(rot)*pos.z-Math.sin(rot)*pos.y
+    var L=3;
+    var cx=(L-1)*p.x/(L+p.z);
+    var cy=(L-1)*p.y/(L+p.z);
+
+    for(var i=-2;i<=2;i++)for(var j=-2;j<=2;j++){
+      depthplot(Math.round(canvas.width*(cx+1)/2)+i,Math.round(canvas.height*(cy+1)/2)+j,p.z,color,light)
     }
-    d={
-      x:d.x,
-      y:Math.cos(rot)*d.y+Math.sin(rot)*d.z,
-      z:Math.cos(rot)*d.z-Math.sin(rot)*d.y
-    }
-    function trace(t){
-      return func(
-        t.multC(d.x).addC(pos.x),
-        t.multC(d.y).addC(pos.y),
-        t.multC(d.z).addC(pos.z)
-      )
-    }
-    if(x==Math.floor(canvas.width/2)&&y==Math.floor(canvas.height/2))window.trace=trace;
-    var t=Solver.minanswer([0,16],trace);
-    if(!t){
-      g.fillStyle='red';
-    }else{
-      var p={
-        x:pos.x+d.x*t,
-        y:pos.y+d.y*t,
-        z:pos.z+d.z*t
-      };
-      var t=Math.atan2(p.y,p.x);
-      var r=Math.sqrt(p.x*p.x+p.y*p.y);
-      var col=Math.max(
-        Math.exp(Math.sin(64*t)-1),
-        Math.exp(Math.sin(32*r)-1),
-        Math.exp(Math.sin(32*p.z)-1)
-      );
-      var color={r:col,g:col,b:col};
-      g.fillStyle='rgb('+Math.round(0xff*color.r)+','+Math.round(0xff*color.g)+','+Math.round(0xff*color.b)+')';
-    }
-    g.fillRect(x,y,1,1);
   }
+  cubes.forEach(function(c){
+    var cv=[[[],[]],[[],[]]];
+    for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
+      cv[i][j][k]=calc(c.x+i,c.y+j,c.z+k);
+    }
+    for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
+      var a,b;
+      if(i==0&&(a=cv[i][j][k])*(b=cv[1][j][k])<0){
+        plot(c.x+a/(a-b),c.y+j,c.z+k)
+      }if(j==0&&(a=cv[i][j][k])*(b=cv[i][1][k])<0){
+        plot(c.x+i,c.y+a/(a-b),c.z+k)
+      }if(k==0&&(a=cv[i][j][k])*(b=cv[i][j][1])<0){
+        plot(c.x+i,c.y+j,c.z+a/(a-b))
+      }
+    }
+  })
 }
 </script>
+
