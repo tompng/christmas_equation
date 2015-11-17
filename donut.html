@@ -5,6 +5,7 @@
 .hoge{position:relative;padding:1px;}
 .piyo{position:absolute;left:4px;top:4px;}
 </style>
+<!--
 <div class='hoge' style='background:rgb(255,224,160)'><span class='piyo'>donut</span>
 \[
 \bigl(\sqrt{x^2+y^2}-2\bigr)^2+z^2-1+\frac{3}{10}sin\bigl(5atan\frac{z}{\sqrt{x^2+y^2}-2}+8atan\frac{y}{x}\bigr)+\frac{1}{2(1+100z^2)}=0
@@ -20,11 +21,13 @@
 \bigl(\sqrt{x^2+y^2}-2\bigr)^2+10z^2-1+sin(7x-8y+9z)+sin(8x+9y-7z)+sin(-9x+7y-8z)=0
 \]
 </div>
+-->
 
+\[
+w=  x\bigl(1-\frac{1.25}{1+8(y-0.9)^2}+\frac{1}{1+16(y-0.8)^2}\bigr)\\
+x^2+y^2+32atan^2\Bigl(|z|-\frac{1}{2}+\frac{w^2}{2}+\frac{y^2}{4}+\frac{y-1}{32}cos\bigl(32atan\frac{w}{y-1}\bigr)+\frac{y-1}{8}\Bigr)=1
 
-
-
-
+\]
 
 <script>
 onload=function(){
@@ -36,6 +39,16 @@ onload=function(){
   g=canvas.getContext('2d');
   canvas.width=canvas.height=1024;
   var r=new Renderer();
+  r.render(function(x,y,z){
+    var _=y;y=x;x=_;
+    z=Math.abs(z);
+    z-=0.5;
+    x*=1-1.25/(1+8*(y-0.9)*(y-0.9))+1/(1+16*(y-0.8)*(y-0.8));
+    var th=Math.atan2(x,y-1);
+    var zz=z+x*x/2+y*y/4+(y-1)*Math.cos(32*th)/32+(y-1)/8;
+    return x*x+y*y+32*Math.atan(zz)*Math.atan(zz)-1
+  },[0xff,0xdd,0xee])
+  return;
   r.render(function(x,y,z){
     var l=Math.sqrt(x*x+y*y);
     var donut=(l-2)*(l-2)+z*z-1+(Math.sin(7*x-8*y+9*z)+Math.sin(8*x+9*y-7*z)+Math.sin(-9*x+7*y+8*z))/64;
@@ -65,6 +78,7 @@ Renderer.prototype.render=function(func,color){
   var cubes=[];
   var IN=2;
   var R=3.2;
+  R=1.2;
   var size=SIZE/IN;
   for(var i=0;i<IN;i++)for(var j=0;j<IN;j++)for(var k=0;k<IN;k++){
     cubes.push({x:i*size,y:j*size,z:k*size})
@@ -238,7 +252,6 @@ Renderer.prototype.render=function(func,color){
         tris.push([line[0],line[i-1],line[i]]);
       }
     });
-    if(lines[0][0].z==4)console.log(c,cv)
 
     tris.forEach(function(tri){
       var pa=tri[0],pb=tri[1],pc=tri[2];
