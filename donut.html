@@ -1,6 +1,37 @@
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+<style>
+.hoge{position:relative;padding:1px;}
+.piyo{position:absolute;left:4px;top:4px;}
+</style>
+<div class='hoge' style='background:rgb(255,224,160)'><span class='piyo'>donut</span>
+\[
+\bigl(\sqrt{x^2+y^2}-2\bigr)^2+z^2-1+\frac{3}{10}sin\bigl(5atan\frac{z}{\sqrt{x^2+y^2}-2}+8atan\frac{y}{x}\bigr)+\frac{1}{2(1+100z^2)}=0
+\]
+</div>
+<div class='hoge' style='background:rgba(128,64,16,0.5)'><span class='piyo'>chocolate</span>
+\[
+\Bigl(\bigl(\sqrt{x^2+y^2}-2\bigr)^2+z^2-1+\frac{3}{10}sin\bigl(5atan\frac{z}{\sqrt{x^2+y^2}-2}+8atan\frac{y}{x}\bigr)-\frac{1}{5(1+100z^2)}\Bigr)^2+\bigl(\frac{x-z-5}{4}\bigr)^{12}-\frac{1}{5}=0
+\]
+</div>
+<div class='hoge' style='background:rgb(240,240,240)'><span class='piyo'>cream</span>
+\[
+\bigl(\sqrt{x^2+y^2}-2\bigr)^2+10z^2-1+sin(7x-8y+9z)+sin(8x+9y-7z)+sin(-9x+7y-8z)=0
+\]
+</div>
+
+
+
+
+
+
 <script>
 onload=function(){
   canvas=document.createElement('canvas');
+  canvas.style.width='100%'
+  canvas.style.position='absolute'
+  canvas.style.left=canvas.style.top=0
   document.body.appendChild(canvas);
   g=canvas.getContext('2d');
   canvas.width=canvas.height=1024;
@@ -11,14 +42,13 @@ onload=function(){
     var twist=0.3*Math.sin(5*Math.atan2(z,l-2)+8*Math.atan2(y,x));
     var boko=0.5/(1+100*z*z);
     return donut+twist+boko;
-  },[255,240,220]);
-
+  },[255,224,160]);
   r.render(function(x,y,z){
     var l=Math.sqrt(x*x+y*y);
     var donut=(l-2)*(l-2)+z*z-1;
     var deko=-0.2/(1+100*z*z);
     var twist=0.3*Math.sin(5*Math.atan2(z,l-2)+8*Math.atan2(y,x));
-    return (donut+twist+deko)*(donut+twist+deko)+Math.pow((x-z)/4-1,12)-0.2;
+    return (donut+twist+deko)*(donut+twist+deko)+Math.pow((x-z-5)/4,12)-0.2;
   },[128,64,16]);
   r.render(function(x,y,z){
     var l=Math.sqrt(x*x+y*y);
