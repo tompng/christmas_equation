@@ -37,17 +37,26 @@ onload=function(){
   canvas.style.left=canvas.style.top=0
   document.body.appendChild(canvas);
   g=canvas.getContext('2d');
-  canvas.width=canvas.height=1024;
+  canvas.width=canvas.height=2048;
   var r=new Renderer();
   function starfunc(x,y,z){
     y-=0.46;
     x*=4;y*=4;z*=3;
     var l=Math.sqrt(0.01+x*x+y*y);
     var th=Math.atan2(y,x);
-    return 4*Math.sqrt(0.01+z*z)+l*(1-0.1*Math.asin(0.98*Math.sin(5*th)))-1
+    return 4*Math.sqrt(0.01+z*z)+l*(1-0.2*Math.asin(0.98*Math.sin(5*th)))-1
   }
   // r.render(starfunc,[255,255,128]);
-  r.render(function(x,y,z){
+  function decofunc(x,y,z){
+    var R=1.5;
+    x*=R;y*=R;z*=R;
+    y+=0.5;
+    y+=Math.sin(3*x+4*y+5*z)/8;
+    var r=(1-y)/2+0.15;
+    return Math.pow(Math.sin(6*y)/6,2)+Math.pow(Math.sqrt(x*x+z*z)-r,2)-0.001*(1-y*y)
+  }
+  // r.render(decofunc, [255,255,255])
+  function treefunc(x,y,z){
     var x0=x,y0=y,z0=z;
     var R=1.5;
     x*=R;y*=R;z*=R
@@ -60,11 +69,15 @@ onload=function(){
     l-=deko*(1-y)/8;
     y-=deko*(1-y)/8;
     var a=4*l/(1-y+Math.sqrt(0.01+(1-y)*(1-y)))*Math.sqrt(1-y*y+Math.sqrt(0.01+(1-y*y)*(1-y*y)))
-    var tree = y*y+a*a-1-10*Math.pow((1-y)/2,4)/(1+Math.pow(40*l2,10)+Math.pow(1.1*y,10));
-    var star=starfunc(x0,y0,z0)
-    return Math.atan(tree)*Math.atan(star)-0.01
+    return y*y+a*a-1-10*Math.pow((1-y)/2,4)/(1+Math.pow(40*l2,10)+Math.pow(y/0.8,10));
+  }
 
-  },[32,160,32]);
+  r.render(function(x,y,z){
+    var tree=treefunc(x,y,z);
+    var star=starfunc(x,y,z);
+    var deco=decofunc(x,y,z);
+    return (Math.atan(tree)*Math.atan(star)-0.01)*deco
+  },[0xff,0xff,0xff]);
 
 
 return
@@ -103,12 +116,10 @@ function Renderer(){
 }
 Renderer.prototype.render=function(func,color){
   var values={};
-  // var SIZE=256;
-  SIZE=128
+  var SIZE=512;
   var cubes=[];
   var IN=2;
-  var R=3.2;
-  R=1.2;
+  var R=1.2;
   var size=SIZE/IN;
   for(var i=0;i<IN;i++)for(var j=0;j<IN;j++)for(var k=0;k<IN;k++){
     cubes.push({x:i*size,y:j*size,z:k*size})
@@ -148,7 +159,7 @@ Renderer.prototype.render=function(func,color){
     size/=2;
     console.log(size,cubes.length)
   }
-  var t=0*Math.PI/180;
+  var t=30*Math.PI/180;
   var cos=Math.cos(t),sin=Math.sin(t);
   var depthbuf=this.depthbuf;
   var colorbuf=this.imagedata.data
