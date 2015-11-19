@@ -57,18 +57,14 @@ onload=function(){
 
     var s=Math.atan2(z,x);
     var t=1-y-Math.sqrt(l2)/2;
-    var deko=Math.pow(Math.sin(2*s+3*3*t)*Math.sin(3*s-3*2*t),2)//*sigmoid(0.5-(y-1)/l,40);
-
-    y/=1+0.2/(1+Math.pow(l2*(20+sigmoid(y,8)*200),20))
-    if(y*y>1)return 1;
-    return 4*l2*(1.1-y*y)/(1.1-y)+y*y-1-deko*(1-y)/8*sigmoid(t+0.6,20)/(0.1+l2)
-
-    return y-4+Math.sqrt(1+16*l2)-deko/2+Math.exp(-4*(2+y))
-
+    var deko=Math.pow(Math.sin(2*s+3*3*t)*Math.sin(3*s-3*2*t),2)/(1+Math.exp(10*(t-1.5)))//*sigmoid(0.5-(y-1)/l,40);
+    l-=deko*(1-y)/8;
+    y-=deko*(1-y)/8;
+    var a=4*l/(1-y+Math.sqrt(0.1+(1-y)*(1-y)))*Math.sqrt(1-y*y+Math.sqrt(0.01+(1-y*y)*(1-y*y)))
+    return y*y+a*a-1-10*Math.pow((1-y)/2,4)/(1+Math.pow(40*l2,10)+Math.pow(1.1*y,10));
   },[32,160,32]);
 
 
-//これでクリスマスツリー(星付き)を作りたい とりあえず星完成
 return
   r.render(function(x,y,z){
     var _=y;y=x;x=_;
@@ -105,8 +101,8 @@ function Renderer(){
 }
 Renderer.prototype.render=function(func,color){
   var values={};
-  var SIZE=256;
-  // SIZE=128
+  // var SIZE=256;
+  SIZE=128
   var cubes=[];
   var IN=2;
   var R=3.2;
@@ -150,7 +146,7 @@ Renderer.prototype.render=function(func,color){
     size/=2;
     console.log(size,cubes.length)
   }
-  var t=15*Math.PI/180;
+  var t=0*Math.PI/180;
   var cos=Math.cos(t),sin=Math.sin(t);
   var depthbuf=this.depthbuf;
   var colorbuf=this.imagedata.data
