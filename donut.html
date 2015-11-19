@@ -39,17 +39,16 @@ onload=function(){
   g=canvas.getContext('2d');
   canvas.width=canvas.height=1024;
   var r=new Renderer();
-  r.render(function(x,y,z){
-    y-=0.55;
-    x*=3;y*=3;z*=2;
+  function starfunc(x,y,z){
+    y-=0.46;
+    x*=4;y*=4;z*=3;
     var l=Math.sqrt(0.01+x*x+y*y);
     var th=Math.atan2(y,x);
     return 4*Math.sqrt(0.01+z*z)+l*(1-0.1*Math.asin(0.98*Math.sin(5*th)))-1
-  },[255,255,128]);
-  function sigmoid(a,k){
-    return 1/(1+Math.exp(-a*k));
   }
+  // r.render(starfunc,[255,255,128]);
   r.render(function(x,y,z){
+    var x0=x,y0=y,z0=z;
     var R=1.5;
     x*=R;y*=R;z*=R
     y+=0.5
@@ -57,11 +56,14 @@ onload=function(){
 
     var s=Math.atan2(z,x);
     var t=1-y-Math.sqrt(l2)/2;
-    var deko=Math.pow(Math.sin(2*s+3*3*t)*Math.sin(3*s-3*2*t),2)/(1+Math.exp(10*(t-1.5)))//*sigmoid(0.5-(y-1)/l,40);
+    var deko=Math.pow(Math.sin(2*s+3*3*t)*Math.sin(3*s-3*2*t),2)/(1+Math.exp(10*(t-1.5)))
     l-=deko*(1-y)/8;
     y-=deko*(1-y)/8;
-    var a=4*l/(1-y+Math.sqrt(0.1+(1-y)*(1-y)))*Math.sqrt(1-y*y+Math.sqrt(0.01+(1-y*y)*(1-y*y)))
-    return y*y+a*a-1-10*Math.pow((1-y)/2,4)/(1+Math.pow(40*l2,10)+Math.pow(1.1*y,10));
+    var a=4*l/(1-y+Math.sqrt(0.01+(1-y)*(1-y)))*Math.sqrt(1-y*y+Math.sqrt(0.01+(1-y*y)*(1-y*y)))
+    var tree = y*y+a*a-1-10*Math.pow((1-y)/2,4)/(1+Math.pow(40*l2,10)+Math.pow(1.1*y,10));
+    var star=starfunc(x0,y0,z0)
+    return Math.atan(tree)*Math.atan(star)-0.01
+
   },[32,160,32]);
 
 
