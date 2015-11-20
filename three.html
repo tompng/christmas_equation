@@ -3,7 +3,7 @@
 <script src="OrbitControls.js"></script>
 <script src="christmas.js"></script>
 <script src="polygonizer.js"></script>
-<style>body{margin:0;padding:0;}canvas{width:100%;height:100%;}</style>
+<style>body{margin:0;padding:0;}canvas{width:100%;height:100%;z-index:0;}</style>
 <script id="vertexShader" type="x-shader/x-vertex">
 varying vec3 norm;
 void main(){
@@ -44,7 +44,7 @@ var material = new THREE.ShaderMaterial({
 });
 var geometry=new THREE.BufferGeometry();
 
-var triangles=Polygonizer.generate(christmasfunc,128,1.6);
+var triangles=Polygonizer.generate(christmasfunc,512,1.6);
 var positions = new Float32Array( triangles.length * 3 * 3 );
 var normals = new Float32Array( triangles.length * 3 * 3 );
 for(var i=0;i<triangles.length;i++){

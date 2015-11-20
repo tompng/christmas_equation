@@ -1,0 +1,38 @@
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+<style>
+body{color:white;}
+.left .MathJax_Display {
+  text-align: left !important;
+  text-indent: 2em !important;
+}
+.paddingzero div{
+  padding: 0;
+}
+</style>
+<div class='left'>
+\[
+  fstar(x,y,z) = 4\sqrt{0.01+4z^2}+\bigl(\sqrt{0.01+9x^2+(3y-3.4)^2}-0.1\bigr)\biggl(1-0.2*asin\Bigl(0.98sin\bigl(5atan(3y-3.4,3x)\bigr)\Bigr)\biggr)-1
+\]
+\[
+  fdeco(x,y,z) =  \frac{sin^2\bigl(6y+\frac{sin(3x+4y+5z)}{2}\bigr)}{36}+\bigl(\sqrt{x^2+z^2}-\frac{1-y}{2}-0.1\bigr)^2-\frac{1-(y+\frac{sin(3x+4y+5z)}{12})^2}{1000}
+\]
+\[
+  fleaf(x,y,z)=\frac{sin^2\bigl(2atan2(z,x)+9(1-y-\frac{\sqrt{x^2+z^2}}{2})\bigr)sin^2\bigl(3atan2(z,x)-6(1-y-\frac{\sqrt{x^2+z^2}}{2})\bigr)}{1+e^{10-10y-5\sqrt{x^2+z^2}-14.5}}
+\]
+\[
+  ftree(x,y,z) = \bigl(y-\frac{1-y}{8}fleaf(x,y,z)\bigr)^2+\Biggl(
+    \frac{4\bigl(\sqrt{x^2+z^2}-\frac{1-y}{8}fleaf(x,y,z)\bigr)\sqrt{1-\bigl(y-\frac{1-y}{8}fleaf(x,y,z)\bigr)^2+\sqrt{0.01+\Bigl(1-\bigl(y-\frac{1-y}{8}fleaf(x,y,z)\bigr)^2\Bigr)^2}}}{1-y+\frac{1-y}{8}fleaf(x,y,z)+\sqrt{0.01+\bigl(1-y+\frac{1-y}{8}fleaf(x,y,z)\bigr)^2}}
+  \Biggr)^2-1-\frac{10}{1+40^{10}(x^2+z^2)^{10}+10^{10}\bigl(1+y-\frac{1-y}{8}fleaf(x,y,z)\bigr)^{10}}
+\]
+</div>
+
+<div style='transform:scale(2,2);padding: 40px;position:relative'>
+<center style='position:relative;font-family:STIXGeneral-Italic;top:20px;'>
+Christmas Equation
+</center>
+\[
+  \Bigl(atan\bigl(ftree(x,y,z)\bigr)atan\bigl(fstar(x,y,z)\bigr)-0.01\Bigr)fdeco(x,y,z)=0
+\]
+</div>

@@ -8,9 +8,10 @@ function starfunc(x,y,z){
   return 4*Math.sqrt(0.01+z*z)+l*(1-0.2*Math.asin(0.98*Math.sin(5*th)))-1
 }
 function decofunc(x,y,z){
+  var y0=y;
   y+=Math.sin(3*x+4*y+5*z)/12;
-  var r=(1-y)/2+0.1;
-  return Math.pow(Math.sin(6*y)/6,2)+Math.pow(Math.sqrt(x*x+z*z)-r,2)-0.001*(1-y*y)
+  var r=(1-y0)/2+0.1;
+  return Math.pow(Math.sin(6*y)/6,2)+Math.pow(Math.sqrt(x*x+z*z)-r,2)-(1-y*y)/1000;
 }
 function treefunc(x,y,z){
   var l2=x*x+z*z,l=Math.sqrt(l2);
