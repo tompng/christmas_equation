@@ -1,6 +1,7 @@
 <script type="text/javascript"
   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
 </script>
+<script src='polygonizer.js'></script>
 <style>
 .hoge{position:relative;padding:1px;}
 .piyo{position:absolute;left:4px;top:4px;}
@@ -113,55 +114,20 @@ function Renderer(){
   this.depthbuf=[];
   this.imagedata=g.getImageData(0,0,canvas.width,canvas.height);
 }
+
 Renderer.prototype.render=function(func,color){
   var values={};
   var SIZE=512;
-  var cubes=[];
-  var IN=2;
   var R=1.2;
-  var size=SIZE/IN;
-  for(var i=0;i<IN;i++)for(var j=0;j<IN;j++)for(var k=0;k<IN;k++){
-    cubes.push({x:i*size,y:j*size,z:k*size})
-  }
-  while(size>1){
-    function calc(x,y,z){
-      var key=(x*(SIZE+1)+y)*(SIZE+1)+z;
-      var val=values[key];
-      if(val!==undefined)return val;
-      val=func(R*(2*x/SIZE-1),R*(2*y/SIZE-1),R*(2*z/SIZE-1));
-      return values[key]=val;
-    }
-    var subcubes=[];
-    cubes.forEach(function(c){
-      var neg=false;
-      var pos=false;
-      for(var i=0;i<=size;i++)for(var j=0;j<=size;j++){
-        var val=calc(c.x+i,c.y+j,c.z);
-        neg=neg||val<0;pos=pos||val>0;
-        var val=calc(c.x+i,c.y+j,c.z+size);
-        neg=neg||val<0;pos=pos||val>0;
-        var val=calc(c.x,c.y+i,c.z+j);
-        neg=neg||val<0;pos=pos||val>0;
-        var val=calc(c.x+size,c.y+i,c.z+j);
-        neg=neg||val<0;pos=pos||val>0;
-        var val=calc(c.x+j,c.y,c.z+i);
-        neg=neg||val<0;pos=pos||val>0;
-        var val=calc(c.x+j,c.y+size,c.z+i);
-        neg=neg||val<0;pos=pos||val>0;
-      }
-      if(!neg||!pos)return;
-      for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
-        subcubes.push({x:c.x+i*size/2,y:c.y+j*size/2,z:c.z+k*size/2});  
-      }
-    })
-    cubes=subcubes;
-    size/=2;
-    console.log(size,cubes.length)
-  }
-  var t=30*Math.PI/180;
+  var t=-0*30*Math.PI/180;
   var cos=Math.cos(t),sin=Math.sin(t);
   var depthbuf=this.depthbuf;
   var colorbuf=this.imagedata.data
+  var triangles=Polygonizer.generate(func,SIZE,R);
+  triangles.forEach(function(tri){
+    var pa=tri[0],pb=tri[1],pc=tri[2];
+    plotTriangle(pa,pb,pc);
+  })
   function depthplot(x,y,depth,color,light){
     if(x<0||x>=canvas.width||y<0||y>=canvas.height)return;
     var key=(canvas.height-y-1)*canvas.width+x;
@@ -240,64 +206,8 @@ Renderer.prototype.render=function(func,color){
     var L=3;
     var cx=(L-1)*p.x/(L+p.z);
     var cy=(L-1)*p.y/(L+p.z);
-
     depthplot(Math.round(canvas.width*(cx+1)/2),Math.round(canvas.height*(cy+1)/2),p.z,color,light)
-    // for(var i=-1;i<=1;i++)for(var j=-1;j<=1;j++){
-    //   depthplot(Math.round(canvas.width*(cx+1)/2)+i,Math.round(canvas.height*(cy+1)/2)+j,p.z,color,light)
-    // }
   }
-  cubes.forEach(function(c){
-    var cv=[[[],[]],[[],[]]];
-    for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
-      cv[i][j][k]=calc(c.x+i,c.y+j,c.z+k);
-    }
-    var points=[];
-    for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
-      var a,b,p;
-      if(i==0&&(a=cv[0][j][k])*(b=cv[1][j][k])<=0){
-        p={x:c.x+a/(a-b),y:c.y+j,z:c.z+k};
-        points.push([2+j,4+k,p]);
-      }if(j==0&&(a=cv[i][0][k])*(b=cv[i][1][k])<=0){
-        p={x:c.x+i,y:c.y+a/(a-b),z:c.z+k};
-        points.push([i,4+k,p]);
-      }if(k==0&&(a=cv[i][j][0])*(b=cv[i][j][1])<=0){
-        p={x:c.x+i,y:c.y+j,z:c.z+a/(a-b)};
-        points.push([i,2+j,p]);
-      }
-    }
-    if(!points.length)return;
-    var lines=[];
-    var ps=points.map(function(a){return a});
-    // var plen=points.length;
-    while(points.length){
-      var p=points.shift();
-      var line=[p[2]];
-      lines.push(line);
-      var key=p[0];
-      while(true){
-        var p2=null;
-        points.forEach(function(q){
-          if(q[0]==key||q[1]==key)p2=q;
-        });
-        if(!p2)break;
-        points=points.filter(function(q){return p2!=q})
-        p=p2;
-        line.push(p[2]);
-        key=p[0]+p[1]-key;
-      }
-    }
-    var tris=[];
-    lines.forEach(function(line){
-      for(var i=2;i<line.length;i++){
-        tris.push([line[0],line[i-1],line[i]]);
-      }
-    });
-
-    tris.forEach(function(tri){
-      var pa=tri[0],pb=tri[1],pc=tri[2];
-      plotTriangle(pa,pb,pc);
-    })
-  });
   g.putImageData(this.imagedata,0,0);
 }
 var hoge={};
