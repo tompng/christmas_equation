@@ -43,7 +43,7 @@ var material = new THREE.ShaderMaterial({
   }
 });
 var geometry=new THREE.BufferGeometry();
-var RESOLUTION=prompt('resolution(2^n)',64);
+var RESOLUTION=parseInt(prompt('resolution(2^n)',64))||64;
 var triangles=Polygonizer.generate(christmasfunc,RESOLUTION,1.6);
 var positions = new Float32Array( triangles.length * 3 * 3 );
 var normals = new Float32Array( triangles.length * 3 * 3 );
