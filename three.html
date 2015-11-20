@@ -1,0 +1,95 @@
+<body></body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.min.js"></script>
+<script src="OrbitControls.js"></script>
+<script src="christmas.js"></script>
+<script src="polygonizer.js"></script>
+<style>body{margin:0;padding:0;}canvas{width:100%;height:100%;}</style>
+<script id="vertexShader" type="x-shader/x-vertex">
+varying vec3 norm;
+void main(){
+  norm = (modelMatrix * vec4(normal,1)).xyz;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1);
+}
+</script>
+<script id="fragmentShader" type="x-shader/x-fragment">
+varying vec3 norm;
+uniform vec3 light;
+void main(){
+  float l=0.6+0.4*dot(normalize(norm),light);
+  gl_FragColor=vec4(l,l,l,1);
+}
+</script>
+<script>
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(75, 1000 / 700, 0.1, 10);
+camera.position.set(1, 0, 2);
+renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(1000, 700);
+document.body.appendChild(renderer.domElement);
+var directionalLight = new THREE.DirectionalLight('#bbb', 1);
+directionalLight.position.set(1, 2, 3);
+var ambientLight=new THREE.AmbientLight('#444')
+scene.add(ambientLight);
+scene.add(directionalLight);
+var box = new THREE.BoxGeometry(12, 12, 12);
+var material = new THREE.MeshPhongMaterial({color: 'white', side: THREE.DoubleSide});
+
+var material = new THREE.ShaderMaterial({
+  vertexShader: document.getElementById( 'vertexShader' ).textContent,
+  fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
+  side: THREE.DoubleSide,
+  uniforms: {
+    light: {type: 'v3'}
+  }
+});
+var geometry=new THREE.BufferGeometry();
+
+var triangles=Polygonizer.generate(christmasfunc,128,1.6);
+var positions = new Float32Array( triangles.length * 3 * 3 );
+var normals = new Float32Array( triangles.length * 3 * 3 );
+for(var i=0;i<triangles.length;i++){
+  for(var j=0;j<3;j++){
+    var p=triangles[i][j]
+    var idx=9*i+3*j;
+    var d=1/2048;
+    var fx=christmasfunc(p.x+d,p.y,p.z)-christmasfunc(p.x-d,p.y,p.z);
+    var fy=christmasfunc(p.x,p.y+d,p.z)-christmasfunc(p.x,p.y-d,p.z);
+    var fz=christmasfunc(p.x,p.y,p.z+d)-christmasfunc(p.x,p.y,p.z-d);
+    var fr=Math.sqrt(fx*fx+fy*fy+fz*fz);
+    positions[idx+0]=p.x;
+    positions[idx+1]=p.y;
+    positions[idx+2]=p.z;
+    normals[idx+0]=fx/fr;
+    normals[idx+1]=fy/fr;
+    normals[idx+2]=fz/fr;
+  }
+}
+geometry.addAttribute('position',new THREE.BufferAttribute( positions, 3 ) );
+geometry.addAttribute('normal',new THREE.BufferAttribute( normals, 3 ) );
+
+var mesh=new THREE.Mesh(geometry, material)
+scene.add(mesh);
+var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+var time0=new Date();
+function render() {
+  requestAnimationFrame(render);
+  controls.update();
+  var t=(new Date()-time0)/1000;
+  var lx=Math.sin(t);
+  var ly=Math.sin(1.31*t)+Math.cos(2.13*t);
+  var lz=Math.cos(t)
+  var lr=Math.sqrt(lx*lx+ly*ly+lz*lz);
+  material.uniforms.light.value=new THREE.Vector3(lx/lr,ly/lr,lz/lr)
+  mesh.rotation.y+=0.002;
+  renderer.render(scene, camera);
+}
+window.onresize=function(){
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+}
+onresize();
+render();
+</script>
+

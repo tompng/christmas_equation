@@ -85,8 +85,15 @@ Polygonizer.generate=function(func, size, r, center){
       }
     }
     lines.forEach(function(line){
-      for(var i=2;i<line.length;i++){
-        triangles.push([line[0],line[i-1],line[i]]);
+      var ps=line.map(function(p){
+        return {
+          x:center.x+r*(2*p.x/size-1),
+          y:center.y+r*(2*p.y/size-1),
+          z:center.z+r*(2*p.z/size-1)
+        }
+      })
+      for(var i=2;i<ps.length;i++){
+        triangles.push([ps[0],ps[i-1],ps[i]]);
       }
     });
   });
