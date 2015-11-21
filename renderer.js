@@ -1,4 +1,4 @@
-function heredoc(f){window.ff=f;return f.toString().match(/\/\*([^]*)\*\//)[1]}
+function heredoc(f){return f.toString().match(/\/\*([^]*)\*\//)[1]}
 vertexShaderCode=heredoc(function (){/*
   varying vec3 norm;
   void main(){
@@ -88,6 +88,5 @@ Renderer.prototype.add=function(func, radius, resolution, color){
   var material=this.material.clone();
   material.uniforms.color.value=new THREE.Color(color);
   var mesh=new THREE.Mesh(geometry,material);
-  window.mesh=mesh;
   this.scene.add(mesh);
 }

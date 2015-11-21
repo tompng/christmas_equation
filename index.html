@@ -1,11 +1,11 @@
+<style>body{margin:0;padding:0;}</style>
 <script src="three.min.js"></script>
 <script src="OrbitControls.js"></script>
+<script src="polygonizer.js"></script>
+<script src="renderer.js"></script>
 <script src="donut.js"></script>
 <script src="shell.js"></script>
 <script src="christmas.js"></script>
-<script src="polygonizer.js"></script>
-<style>body{margin:0;padding:0;}canvas{width:100%;height:100%;z-index:0;}</style>
-<script src="renderer.js"></script>
 <script>
 var renderer;
 var resolution = parseInt(prompt('resolution(2^n)',64))||64;
@@ -16,6 +16,8 @@ onload=function(){
   // renderer.add(donutFunc,3.6,resolution,'#ffe0a0');
   // renderer.add(donutChocolateFunc,3.6,resolution,'#804010');
   // renderer.add(donutCreamFunc,3.6,resolution,'white');
+  // renderer.add(function(x,y,z){
+  //   return x*x*x*x+y*y*y*y+z*z*z*z-1;
+  // },0.9,resolution,'blue');
 }
 </script>
-
