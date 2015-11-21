@@ -9,9 +9,10 @@ vertexShaderCode=heredoc(function (){/*
 fragmentShaderCode=heredoc(function(){/*
   varying vec3 norm;
   uniform vec3 light;
+  uniform vec3 color;
   void main(){
-    float l=0.6+0.4*dot(normalize(norm),light);
-    gl_FragColor=vec4(l,l,l,1);
+    float light=0.6+0.4*dot(normalize(norm),light);
+    gl_FragColor=vec4(color*light,1);
   }
 */})
 
@@ -19,7 +20,7 @@ function Renderer(){
   var scene = new THREE.Scene();
   var width=window.innerWidth;
   var height=window.innerHeight;
-  var camera = new THREE.PerspectiveCamera(75,width/height, 0.1, 10);
+  var camera = new THREE.PerspectiveCamera(75,width/height, 0.1, 100);
   camera.position.set(1, 0, 2);
   var renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(width,height);
@@ -29,11 +30,10 @@ function Renderer(){
     vertexShader: vertexShaderCode,
     fragmentShader: fragmentShaderCode,
     side: THREE.DoubleSide,
-    uniforms: {light: {type: 'v3'}}
+    uniforms: {light: {type: 'v3'}, color: {type: 'c'}}
   });
   this.scene=scene;
   this.material=material;
-  var meshes=[];
   this.controls=controls;
   var time0=new Date();
   function render() {
@@ -44,7 +44,9 @@ function Renderer(){
     var ly=Math.sin(1.31*t)+Math.cos(2.13*t);
     var lz=Math.cos(t)
     var lr=Math.sqrt(lx*lx+ly*ly+lz*lz);
-    material.uniforms.light.value=new THREE.Vector3(lx/lr,ly/lr,lz/lr)
+    scene.children.forEach(function(mesh){
+      mesh.material.uniforms.light.value=new THREE.Vector3(lx/lr,ly/lr,lz/lr);
+    })
     controls.rotateLeft(0.001);
     renderer.render(scene, camera);
   }
@@ -55,7 +57,10 @@ function Renderer(){
   }
   render();
 }
-Renderer.prototype.add=function(func, radius, resolution){
+Renderer.prototype.add=function(func, radius, resolution, color){
+  if(!radius)radius=1;
+  if(!resolution)resolution=64;
+  if(!color)color='white';
   var geometry=new THREE.BufferGeometry();
   var triangles=Polygonizer.generate(func,resolution,radius);
   var positions = new Float32Array( triangles.length * 3 * 3 );
@@ -78,8 +83,11 @@ Renderer.prototype.add=function(func, radius, resolution){
       normals[idx+2]=fz/fr;
     }
   }
-  geometry.addAttribute('position',new THREE.BufferAttribute( positions, 3 ) );
-  geometry.addAttribute('normal',new THREE.BufferAttribute( normals, 3 ) );
-  var mesh=new THREE.Mesh(geometry, this.material);
+  geometry.addAttribute('position',new THREE.BufferAttribute(positions,3));
+  geometry.addAttribute('normal',new THREE.BufferAttribute(normals,3));
+  var material=this.material.clone();
+  material.uniforms.color.value=new THREE.Color(color);
+  var mesh=new THREE.Mesh(geometry,material);
+  window.mesh=mesh;
   this.scene.add(mesh);
 }
