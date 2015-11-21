@@ -32,8 +32,6 @@ var ambientLight=new THREE.AmbientLight('#444')
 scene.add(ambientLight);
 scene.add(directionalLight);
 var box = new THREE.BoxGeometry(12, 12, 12);
-var material = new THREE.MeshPhongMaterial({color: 'white', side: THREE.DoubleSide});
-
 var material = new THREE.ShaderMaterial({
   vertexShader: document.getElementById( 'vertexShader' ).textContent,
   fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
