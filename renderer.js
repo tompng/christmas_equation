@@ -58,6 +58,7 @@ function Renderer(){
   render();
 }
 Renderer.prototype.add=function(func, radius, resolution, color){
+  if(typeof func=='string')func=MathFunc.generate(func);
   if(!radius)radius=1;
   if(!resolution)resolution=64;
   if(!color)color='white';
