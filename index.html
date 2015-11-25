@@ -12,12 +12,33 @@ var renderer;
 var resolution = parseInt(prompt('resolution(2^n)',64))||64;
 onload=function(){
   renderer=new Renderer();
-  renderer.add(christmasFunc, 1.6, resolution,'white');
+  // renderer.add(christmasFunc, 1.6, resolution,'white');
   // renderer.add(shellFunc,1.2,resolution,'#ffddee');
   // renderer.add(donutFunc,3.6,resolution,'#ffe0a0');
   // renderer.add(donutChocolateFunc,3.6,resolution,'#804010');
   // renderer.add(donutCreamFunc,3.6,resolution,'white');
   // renderer.add(function(x,y,z){return x*x*x*x+y*y*y*y+z*z*z*z-1},0.9,resolution,'blue');
-  // renderer.add('sin(x^2+y-z)+sin(y^2+z-x)+sin(z^2+x-y)',2,resolution,'silver');
+  renderer.add(function(x,y,z){
+    y-=Math.sin(x*3+2*z)/32-Math.sin(2*x-3*z)/32;
+    y*=2;z*=1.5;
+    var r=Math.sqrt(x*x*x*x+y*y*y*y+z*z*z*z);
+    x*=5;y*=5;z*=5;
+    var sum=Math.sin(x)*Math.sin(y)*Math.sin(z);
+    var sum2=Math.sin(x+2*y+z+1)*Math.sin(x-z+2)*Math.sin(x-y+z+3);
+    var sum3=Math.sin(y+2*z+x+2)*Math.sin(y-x+3)*Math.sin(y-z+x+1);
+    return r-0.8+0.02/(1+40*sum*sum)+0.02/(1+40*sum2*sum2)+0.02/(1+40*sum3*sum3)
+  },1,resolution,'white');
+
+  renderer.add(function(x,y,z){
+    x+=(Math.sin(4*x-3*y+z)-Math.sin(x+4*y+3*z))/32;
+    y+=(Math.sin(x+4*y+3*z)-Math.sin(4*x-3*y+z))/64;
+    z+=(Math.sin(3*x+y-4*z)-Math.sin(3*x-y-4*z))/32;
+    y-=0.6-x*x/4-z*z/2-x*x*x*x/12;
+    y+=y*Math.pow(Math.sin(5*x+7*z),16)/4;
+    return Math.pow(x/1.2,8)+Math.pow(y/0.15,8)+Math.pow(z/0.7,4)-1;
+  },1.4,resolution,'#f20');
 }
+
+
+
 </script>
