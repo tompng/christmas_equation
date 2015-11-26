@@ -57,6 +57,14 @@ function Renderer(){
   }
   render();
 }
+Renderer.prototype.clear=function(){
+  var mesh;
+  while(mesh = this.scene.children[0]){
+    this.scene.remove(mesh);
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+  }
+}
 Renderer.prototype.add=function(func, radius, resolution, color){
   if(typeof func=='string')func=MathFunc.generate(func);
   if(!radius)radius=1;

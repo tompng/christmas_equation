@@ -23,17 +23,17 @@ Polygonizer.generate=function(func, size, r, center){
       var pos=false;
       for(var i=0;i<=s;i++)for(var j=0;j<=s;j++){
         var val=calc(c.x+i,c.y+j,c.z);
-        neg=neg||val<0;pos=pos||val>0;
+        neg=neg||val<=0;pos=pos||val>=0;
         var val=calc(c.x+i,c.y+j,c.z+s);
-        neg=neg||val<0;pos=pos||val>0;
+        neg=neg||val<=0;pos=pos||val>=0;
         var val=calc(c.x,c.y+i,c.z+j);
-        neg=neg||val<0;pos=pos||val>0;
+        neg=neg||val<=0;pos=pos||val>=0;
         var val=calc(c.x+s,c.y+i,c.z+j);
-        neg=neg||val<0;pos=pos||val>0;
+        neg=neg||val<=0;pos=pos||val>=0;
         var val=calc(c.x+j,c.y,c.z+i);
-        neg=neg||val<0;pos=pos||val>0;
+        neg=neg||val<=0;pos=pos||val>=0;
         var val=calc(c.x+j,c.y+s,c.z+i);
-        neg=neg||val<0;pos=pos||val>0;
+        neg=neg||val<=0;pos=pos||val>=0;
       }
       if(!neg||!pos)return;
       for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
@@ -50,52 +50,59 @@ Polygonizer.generate=function(func, size, r, center){
     for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
       cv[i][j][k]=calc(c.x+i,c.y+j,c.z+k);
     }
-    var points=[];
-    for(var i=0;i<2;i++)for(var j=0;j<2;j++)for(var k=0;k<2;k++){
-      var a,b,p;
-      if(i==0&&(a=cv[0][j][k])*(b=cv[1][j][k])<=0){
-        p={x:c.x+a/(a-b),y:c.y+j,z:c.z+k};
-        points.push([2+j,4+k,p]);
-      }if(j==0&&(a=cv[i][0][k])*(b=cv[i][1][k])<=0){
-        p={x:c.x+i,y:c.y+a/(a-b),z:c.z+k};
-        points.push([i,4+k,p]);
-      }if(k==0&&(a=cv[i][j][0])*(b=cv[i][j][1])<=0){
-        p={x:c.x+i,y:c.y+j,z:c.z+a/(a-b)};
-        points.push([i,2+j,p]);
-      }
-    }
-    if(!points.length)return;
+
     var lines=[];
-    var ps=points.map(function(a){return a});
-    while(points.length){
-      var p=points.shift();
-      var line=[p[2]];
-      lines.push(line);
-      var key=p[0];
-      while(true){
-        var p2=null;
-        points.forEach(function(q){
-          if(q[0]==key||q[1]==key)p2=q;
-        });
-        if(!p2)break;
-        points=points.filter(function(q){return p2!=q})
-        p=p2;
-        line.push(p[2]);
-        key=p[0]+p[1]-key;
+    function sqline(a,b,c,d){
+      var poly=[];
+      [[a,b],[b,c],[c,d],[d,a]].forEach(function(arg){
+        var a=arg[0],b=arg[1];
+        var va=cv[a[0]][a[1]][a[2]];
+        var vb=cv[b[0]][b[1]][b[2]];
+        if(vb==0)poly.push(b);
+        if(va==0)return;
+        if(va*vb>=0)return;
+        poly.push([
+          (a[0]*vb-va*b[0])/(vb-va),
+          (a[1]*vb-va*b[1])/(vb-va),
+          (a[2]*vb-va*b[2])/(vb-va),
+        ]);
+      })
+      if(poly.length<2)return;
+      if(poly.length==2){
+        lines.push([poly[0],poly[1]]);
+      }else{
+        for(var i=0;i<poly.length;i++){
+          lines.push([poly[i],poly[(i+1)%poly.length]]);
+        }
       }
     }
-    lines.forEach(function(line){
-      var ps=line.map(function(p){
+    sqline([0,0,0],[0,0,1],[0,1,1],[0,1,0]);
+    sqline([1,0,0],[1,0,1],[1,1,1],[1,1,0]);
+    sqline([0,0,0],[0,0,1],[1,0,1],[1,0,0]);
+    sqline([0,1,0],[0,1,1],[1,1,1],[1,1,0]);
+    sqline([0,0,0],[0,1,0],[1,1,0],[1,0,0]);
+    sqline([0,0,1],[0,1,1],[1,1,1],[1,0,1]);
+    var ls=lines.map(function(l){
+      return l.map(function(p){
         return {
-          x:center.x+r*(2*p.x/size-1),
-          y:center.y+r*(2*p.y/size-1),
-          z:center.z+r*(2*p.z/size-1)
-        }
+          x:center.x+r*(2*(c.x+p[0])/size-1),
+          y:center.y+r*(2*(c.y+p[1])/size-1),
+          z:center.z+r*(2*(c.z+p[2])/size-1)
+        };
       })
-      for(var i=2;i<ps.length;i++){
-        triangles.push([ps[0],ps[i-1],ps[i]]);
-      }
     });
+    var lc={x:0,y:0,z:0};
+    ls.forEach(function(l){
+      l.forEach(function(p){
+        lc.x+=p.x/lines.length/2;
+        lc.y+=p.y/lines.length/2;
+        lc.z+=p.z/lines.length/2;
+      })
+    });
+    ls.forEach(function(l){
+      triangles.push([lc,l[0],l[1]]);
+    })
   });
+  console.log(triangles.length);
   return triangles;
 }
