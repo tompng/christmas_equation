@@ -10,20 +10,21 @@
 <script src="sushi.js"></script>
 <script>
 var renderer;
-var resolution = parseInt(prompt('resolution(2^n)',64))||64;
-onload=function(){
+function show(args){
+  document.body.innerHTML='';
+  var resolution = parseInt(prompt('resolution(2^n)',64))||64;
   renderer=new Renderer();
-  renderer.add(christmasFunc, 1.6, resolution,'white');
-  // renderer.add(shellFunc,1.2,resolution,'#ffddee');
-  // renderer.add(donutFunc,3.6,resolution,'#ffe0a0');
-  // renderer.add(donutChocolateFunc,3.6,resolution,'#804010');
-  // renderer.add(donutCreamFunc,3.6,resolution,'white');
-  // renderer.add(function(x,y,z){return x*x*x*x+y*y*y*y+z*z*z*z-1},0.9,resolution,'blue');
-  // renderer.add('sin(x^2+y-z)+sin(y^2+z-x)+sin(z^2+x-y)',2,resolution,'silver');
-  // renderer.add(sushiShariFunc,1,resolution,'white');
-  // renderer.add(sushiMaguroFunc,1.4,resolution,'#f20');
+  args.forEach(function(arg){
+    renderer.add(arg[0], arg[1], resolution, arg[2]);
+  })
 }
-
-
-
 </script>
+<style>
+a{margin:5px;padding:10px;border:1px solid gray;display:inline-block;border-radius:4px;cursor:pointer;}
+a:hover{background:silver;}
+</style>
+<a onclick="show([[christmasFunc, 1.6, 'white']])">christmas</a>
+<a onclick="show([[shellFunc, 1.2, '#ffddee']])">shell</a>
+<a onclick="show([[donutFunc, 3.6, '#ffe0a0'],[donutChocolateFunc, 3.6, '#804010'],[donutCreamFunc, 3.6, 'white']])">donut</a>
+<a onclick="show([[sushiShariFunc, 2, 'white'],[sushiMaguroFunc,1.4,'#f20']])">sushi</a>
+<a onclick="show([['sin(x^2+y-z)+sin(y^2+z-x)+sin(z^2+x-y)', 2, '#aaf']])">???</a>
