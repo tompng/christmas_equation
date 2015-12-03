@@ -19,5 +19,5 @@ function sushiMaguroFunc(x,y,z){
   z+=(Math.sin(3*x+y-4*z)-Math.sin(3*x-y-4*z))/32;
   y-=0.6-x*x/4-z*z/2-x*x*x*x/12;
   y+=y*Math.pow(Math.sin(5*x+7*z),16)/4;
-  return Math.pow(x/1.2,8)+Math.pow(y/0.15,8)+Math.pow(z/0.7,2)-1;
+  return Math.pow(x*(1-y/4)/1.2+z/8,8)+Math.pow(y/0.15,16)+Math.pow(z*(1-y/2)/0.7,8)-1;
 }
