@@ -20,7 +20,7 @@ function Renderer(){
   var scene = new THREE.Scene();
   var width=window.innerWidth;
   var height=window.innerHeight;
-  var camera = new THREE.PerspectiveCamera(75,width/height, 0.1, 100);
+  var camera = new THREE.PerspectiveCamera(45,width/height, 0.1, 100);
   camera.position.set(1, 0, 2);
   var renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setSize(width,height);
