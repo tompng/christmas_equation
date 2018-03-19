@@ -23,6 +23,13 @@ function show(args){
   })
 }
 </script>
+<script>
+onload=()=>show([[function(x,y,z){
+  return Math.atan(
+    x*x+y*y+2*z*z+Math.exp(-10*(z+Math.pow(x*x+y*y,4)+0.5*(x*x+y*y)*Math.pow(1-x*x-y*y,2)*Math.sin(64*Math.atan2(y,x))))-1
+  )*((Math.pow(x-z*z/8,2)+Math.pow(y+z*z*(2+z)/6,2))*8+4*Math.pow(z+1/2,4)-2*Math.pow(z+1/2,2)-1)-0.1
+},2,'white']])
+</script>
 <style>
 a{margin:5px;padding:10px;border:1px solid gray;display:inline-block;border-radius:4px;cursor:pointer;}
 a:hover{background:silver;}
