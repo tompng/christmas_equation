@@ -12,14 +12,13 @@ function imogaiFunc(x, y, z) {
   x+=0.001
   y-=4
   const r = Math.hypot(x,y,z)
-  const D = 2*Math.acos(-y/r)
-  const Z = 2*Math.log(r)+D
+  const d = 2*Math.acos(-y/r)
   const th = Math.PI/2*(Math.abs(z)/z||1)-Math.atan(x/z) // Math.arctan2(z,x)
-  const za = Z-th/4/Math.PI
+  const za = 2*Math.log(r)+d-th/4/Math.PI
   const zb = za-1/2
   return Math.min(
-    imogaiPatternFunc(za,D,r),
-    imogaiPatternFunc(zb,D,r) + 64 * (zb>3 ? Math.max(th-Math.sin(D), 0) : 0),
+    imogaiPatternFunc(za,d,r),
+    imogaiPatternFunc(zb,d,r) + 64 * (zb>3 ? Math.max(th-Math.sin(d), 0) : 0),
     (32-24*Math.sin(4*Math.PI*za))*(x*x+z*z)+((y+4)/3)**8 - 1
   )
 }
